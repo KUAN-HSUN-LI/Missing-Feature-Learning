@@ -11,6 +11,7 @@ class simpleNet(nn.Module):
 
     def forward(self, x):
         x = self.in1(x)
+        x = torch.relu(x)
         x = self.out(x)
         x = torch.sigmoid(x)
         return x
