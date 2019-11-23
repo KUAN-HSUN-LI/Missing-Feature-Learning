@@ -22,5 +22,5 @@ def plot_box(data, y_ticks=False, save_path=None):
     plt.show()
 
 
-def plot_confusion_matrix():
+def plot_confusion_matrix(y_true, y_pred):
     return

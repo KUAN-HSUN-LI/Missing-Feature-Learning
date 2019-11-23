@@ -6,7 +6,7 @@ class simpleNet(nn.Module):
     def __init__(self):
         super(simpleNet, self).__init__()
 
-        self.in1 = nn.Linear(10, 512)
+        self.in1 = nn.Linear(9, 512)
         self.out = nn.Linear(512, 12)
 
     def forward(self, x):

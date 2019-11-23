@@ -4,13 +4,15 @@ import numpy as np
 
 
 def counter(dataset):
-    """
+    """Account for the classes in the data
+    Args:
+        dataset (list, numpy)
     """
     keys = Counter(dataset).keys()
     values = Counter(dataset).values()
     key_df = pd.DataFrame(data=keys, columns=["key"])
     value_df = pd.DataFrame(data=values, columns=["quntity"])
-    percent_df = pd.DataFrame([i / len(data) * 100.0 for i in values], columns=["percentage"])
+    percent_df = pd.DataFrame([i / len(dataset) * 100.0 for i in values], columns=["percentage"])
 
     df = pd.concat([key_df, value_df, percent_df], axis=1)
 
