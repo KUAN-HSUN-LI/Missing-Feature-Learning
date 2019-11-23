@@ -1,4 +1,4 @@
-from tqdm import tqdm_notebook as tqdm
+from tqdm import tqdm
 
 
 def label_to_onehot(labels):

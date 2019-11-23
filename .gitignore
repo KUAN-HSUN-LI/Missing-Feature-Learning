@@ -1,2 +1,10 @@
 
 task1/src/data_anal.ipynb
+
+task1/src/__pycache__/
+
+*.csv
+
+task1/src/simpleNet_model/
+
+task1/src/model/__pycache__/
