@@ -1,5 +1,6 @@
 # Missing-Feature-Learning
 
-- 11/23
-  - counter, plot_box, get_outlier
-
+- 11/24
+  - task1 score:0.541
+- 11/25
+  - task1 score:0.694
