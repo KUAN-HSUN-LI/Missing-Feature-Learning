@@ -9,7 +9,7 @@ from preprocessor import preprocess_samples
 from dataset import FeatureDataset
 from model import simpleNet
 from trainer import Trainer
-from utils import f1_loss, SubmitGenerator
+from utils import SubmitGenerator
 
 
 def main():
@@ -20,9 +20,9 @@ def main():
     parser.add_argument('--do_train', action='store_true')
     parser.add_argument('--do_predict', action='store_true')
     parser.add_argument('--hidden_size', default=512, type=int)
-    parser.add_argument('--batch_size', default=256, type=int)
-    parser.add_argument('--max_epoch', default=50, type=int)
-    parser.add_argument('--lr', default=5e-5, type=float)
+    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--max_epoch', default=300, type=int)
+    parser.add_argument('--lr', default=1e-4, type=float)
     parser.add_argument('--cuda', default=0, type=int)
     parser.add_argument('--ckpt', default=-1, type=int, help='load pre-trained model epoch')
     args = parser.parse_args()
@@ -44,7 +44,7 @@ def main():
         model = simpleNet(args.hidden_size)
         model.to(device)
         opt = torch.optim.Adam(model.parameters(), lr=args.lr)
-        criteria = f1_loss
+        criteria = torch.nn.CrossEntropyLoss()
         max_epoch = args.max_epoch
         batch_size = args.batch_size
         trainer = Trainer(device, trainData, validData, model, criteria, opt, batch_size, args.arch)

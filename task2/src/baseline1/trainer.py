@@ -2,9 +2,11 @@ import os
 import json
 import torch
 from tqdm import tqdm
-from metrics import F1
+from metrics import Accuracy
 from torch.utils.data import DataLoader
+from torch.optim.lr_scheduler import StepLR
 torch.manual_seed(42)
+from ipdb import set_trace as pdb
 
 
 class Trainer:
@@ -15,6 +17,7 @@ class Trainer:
         self.model = model
         self.criteria = criteria
         self.opt = opt
+        self.scheduler = StepLR(self.opt, step_size=50, gamma=0.5)
         self.batch_size = batch_size
         self.arch = arch
         self.history = {'train': [], 'valid': []}
@@ -39,7 +42,7 @@ class Trainer:
         trange = tqdm(enumerate(dataloader), total=len(dataloader), desc=description, ascii=True)
 
         loss = 0
-        f1_score = F1()
+        accuracy = Accuracy()
 
         for i, (x, y) in trange:
             o_labels, batch_loss = self.run_iter(x, y)
@@ -49,27 +52,28 @@ class Trainer:
                 self.opt.step()
 
             loss += batch_loss.item()
-            f1_score.update(o_labels.cpu(), y)
+            accuracy.update(o_labels.cpu(), y)
 
-            trange.set_postfix(loss=loss / (i + 1), f1=f1_score.print_score(), acc=f1_score.get_accuracy())
+            trange.set_postfix(accuracy=accuracy.get_score(), loss=loss / (i + 1))
 
         if training:
-            self.history['train'].append(
-                {'f1': f1_score.get_score(), 'accuracy': f1_score.get_accuracy(), 'loss': loss / len(trange)})
+            self.history['train'].append({'accuracy': accuracy.get_score(), 'loss': loss / len(trange)})
         else:
-            self.history['valid'].append(
-                {'f1': f1_score.get_score(), 'accuracy': f1_score.get_accuracy(), 'loss': loss / len(trange)})
+            self.history['valid'].append({'accuracy': accuracy.get_score(), 'loss': loss / len(trange)})
+
+        self.scheduler.step()
 
     def run_iter(self, x, y):
         features = x.to(self.device)
         labels = y.to(self.device)
         o_labels = self.model(features)
-        l_loss = self.criteria(o_labels, labels)
+        l_loss = self.criteria(o_labels, labels.argmax(dim=1))
         return o_labels, l_loss
 
     def save(self, epoch):
         if not os.path.exists(self.arch):
             os.makedirs(self.arch)
-        torch.save(self.model.state_dict(), self.arch + '/model.pkl.' + str(epoch))
-        with open(self.arch + '/history.json', 'w') as f:
-            json.dump(self.history, f, indent=4)
+        if epoch % 10 == 0:
+            torch.save(self.model.state_dict(), self.arch + '/model.pkl.' + str(epoch))
+            with open(self.arch + '/history.json', 'w') as f:
+                json.dump(self.history, f, indent=4)
