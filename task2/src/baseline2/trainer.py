@@ -10,14 +10,15 @@ from ipdb import set_trace as pdb
 
 
 class Trainer:
-    def __init__(self, device, trainData, validData, model, criteria, opt, batch_size, arch):
+    def __init__(self, device, trainData, validData, model, lr, batch_size, arch):
         self.device = device
         self.trainData = trainData
         self.validData = validData
         self.model = model
-        self.criteria = criteria
-        self.opt = opt
-        self.scheduler = StepLR(self.opt, step_size=150, gamma=0.1)
+        self.criteria = torch.nn.CrossEntropyLoss()
+        self.missing_criteria = torch.nn.MSELoss()
+        self.opt = torch.optim.Adam(self.model.parameters(), lr=lr)
+        self.scheduler = StepLR(self.opt, step_size=100, gamma=0.1)
         self.batch_size = batch_size
         self.arch = arch
         self.history = {'train': [], 'valid': []}
@@ -41,33 +42,39 @@ class Trainer:
 
         trange = tqdm(enumerate(dataloader), total=len(dataloader), desc=description, ascii=True)
 
-        loss = 0
+        f_loss = 0
+        l_loss = 0
         accuracy = Accuracy()
 
-        for i, (x, y) in trange:
-            o_labels, batch_loss = self.run_iter(x, y)
+        for i, (x, missing, y) in trange:
+            o_labels, batch_f_loss, batch_l_loss = self.run_iter(x, missing, y)
+            batch_loss = batch_f_loss + batch_l_loss
+
             if training:
                 self.opt.zero_grad()
                 batch_loss.backward()
                 self.opt.step()
 
-            loss += batch_loss.item()
+            f_loss += batch_f_loss.item()
+            l_loss += batch_l_loss.item()
             accuracy.update(o_labels.cpu(), y)
 
-            trange.set_postfix(accuracy=accuracy.print_score(), loss=loss / (i + 1))
+            trange.set_postfix(accuracy=accuracy.print_score(), f_loss=f_loss / (i + 1), l_loss=l_loss / (i + 1))
 
         if training:
-            self.history['train'].append({'accuracy': accuracy.get_score(), 'loss': loss / len(trange)})
+            self.history['train'].append({'accuracy': accuracy.get_score(), 'loss': f_loss / len(trange)})
             self.scheduler.step()
         else:
-            self.history['valid'].append({'accuracy': accuracy.get_score(), 'loss': loss / len(trange)})
+            self.history['valid'].append({'accuracy': accuracy.get_score(), 'loss': f_loss / len(trange)})
 
-    def run_iter(self, x, y):
+    def run_iter(self, x, missing, y):
         features = x.to(self.device)
+        missing = missing.to(self.device)
         labels = y.to(self.device)
-        o_labels = self.model(features)
+        o_missing, o_labels = self.model(features)
+        f_loss = self.missing_criteria(o_missing, missing)
         l_loss = self.criteria(o_labels, labels.argmax(dim=1))
-        return o_labels, l_loss
+        return o_labels, f_loss, l_loss
 
     def save(self, epoch):
         if not os.path.exists(self.arch):

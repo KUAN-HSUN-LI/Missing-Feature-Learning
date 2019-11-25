@@ -1,5 +1,6 @@
 import pandas as pd
 import statistics
+import os
 
 
 def SubmitGenerator(prediction, sampleFile, filename='result/prediction.csv'):
@@ -9,6 +10,8 @@ def SubmitGenerator(prediction, sampleFile, filename='result/prediction.csv'):
         sampleFile (str)
         filename (str)
     """
+    if not os.path.exists('result'):
+        os.makedirs('result')
     sample = pd.read_csv(sampleFile)
     submit = dict()
     submit['Id'] = list(sample.Id.values)
