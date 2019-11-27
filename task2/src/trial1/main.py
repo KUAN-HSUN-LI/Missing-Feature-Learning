@@ -22,7 +22,7 @@ def main():
     parser.add_argument('--do_predict', action='store_true')
     parser.add_argument('--hidden_size', default=512, type=int)
     parser.add_argument('--batch_size', default=128, type=int)
-    parser.add_argument('--max_epoch', default=200, type=int)
+    parser.add_argument('--max_epoch', default=300, type=int)
     parser.add_argument('--lr', default=1e-3, type=float)
     parser.add_argument('--cuda', default=1, type=int)
     parser.add_argument('--ckpt', default=-1, type=int, help='load pre-trained model epoch')
@@ -53,17 +53,10 @@ def main():
         model.to(device)
         trainer = Trainer(device, trainData, validData, model, args.lr, args.batch_size, args.arch)
 
-        # stage 1 training
         for epoch in range(1, args.max_epoch + 1):
-            print('Stage1 Epoch: {}'.format(epoch))
-            trainer.run_epoch(epoch, True, stage1=True)
-            trainer.run_epoch(epoch, False, stage1=True)
-
-        # stage 2 training
-        for epoch in range(1, args.max_epoch + 1):
-            print('Stage2 Epoch: {}'.format(epoch))
-            trainer.run_epoch(epoch, True, stage1=False)
-            trainer.run_epoch(epoch, False, stage1=False)
+            print('Epoch: {}'.format(epoch))
+            trainer.run_epoch(epoch, True)
+            trainer.run_epoch(epoch, False)
             trainer.save(epoch)
 
     if args.do_predict:

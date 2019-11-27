@@ -17,18 +17,14 @@ class Trainer:
         self.model = model
         self.criteria = torch.nn.CrossEntropyLoss()
         self.missing_criteria = torch.nn.MSELoss()
-        self.opt1 = torch.optim.Adam(self.model.parameters(), lr=lr)
-        self.scheduler1 = StepLR(self.opt1, step_size=50, gamma=0.5)
-        self.opt2 = torch.optim.Adam(self.model.parameters(), lr=lr)
-        self.scheduler2 = StepLR(self.opt2, step_size=100, gamma=0.1)
+        self.opt = torch.optim.Adam(self.model.parameters(), lr=lr)
+        self.scheduler = StepLR(self.opt, step_size=100, gamma=0.1)
         self.batch_size = batch_size
         self.arch = arch
         self.history = {'train': [], 'valid': []}
 
-    def run_epoch(self, epoch, training, stage1):
+    def run_epoch(self, epoch, training):
         self.model.train(training)
-        if not stage1:
-            self.model.freeze_stage1_param()
 
         if training:
             description = 'Train'
@@ -52,17 +48,12 @@ class Trainer:
 
         for i, (x, missing, y) in trange:
             o_labels, batch_f_loss, batch_l_loss = self.run_iter(x, missing, y)
-            batch_loss = batch_f_loss if stage1 else batch_l_loss
+            batch_loss = batch_f_loss + batch_l_loss
 
             if training:
-                if stage1:
-                    self.opt1.zero_grad()
-                    batch_loss.backward()
-                    self.opt1.step()
-                else:
-                    self.opt2.zero_grad()
-                    batch_loss.backward()
-                    self.opt2.step()
+                self.opt.zero_grad()
+                batch_loss.backward()
+                self.opt.step()
 
             f_loss += batch_f_loss.item()
             l_loss += batch_l_loss.item()
@@ -71,13 +62,10 @@ class Trainer:
             trange.set_postfix(accuracy=accuracy.print_score(), f_loss=f_loss / (i + 1), l_loss=l_loss / (i + 1))
 
         if training:
-            self.history['train'].append({'accuracy': accuracy.get_score(), 'loss': l_loss / len(trange)})
-            if stage1:
-                self.scheduler1.step()
-            else:
-                self.scheduler2.step()
+            self.history['train'].append({'accuracy': accuracy.get_score(), 'loss': f_loss / len(trange)})
+            self.scheduler.step()
         else:
-            self.history['valid'].append({'accuracy': accuracy.get_score(), 'loss': l_loss / len(trange)})
+            self.history['valid'].append({'accuracy': accuracy.get_score(), 'loss': f_loss / len(trange)})
 
     def run_iter(self, x, missing, y):
         features = x.to(self.device)

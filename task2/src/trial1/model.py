@@ -7,8 +7,8 @@ class simpleNet(nn.Module):
     def __init__(self, hidden_size):
         super(simpleNet, self).__init__()
 
-        self.in1 = nn.Linear(11, hidden_size * 2)
-        self.out1 = nn.Linear(hidden_size * 2, 3)
+        self.in1 = nn.Linear(11, hidden_size)
+        self.out1 = nn.Linear(hidden_size, 3)
 
         self.in2 = nn.Linear(14, hidden_size)
         self.out2 = nn.Linear(hidden_size, 2)
@@ -26,9 +26,3 @@ class simpleNet(nn.Module):
         y = self.out2(y)
         y = torch.sigmoid(y)
         return missing, y
-
-    def freeze_stage1_param(self):
-        for param in self.in1.parameters():
-            param.requires_grad = False
-        for param in self.out1.parameters():
-            param.requires_grad = False
