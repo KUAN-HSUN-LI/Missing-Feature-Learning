@@ -2,6 +2,7 @@ import argparse
 import pandas as pd
 import torch
 from torch.utils.data import DataLoader
+import torch.nn.functional as F
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 
@@ -20,7 +21,7 @@ def main():
     parser.add_argument('--do_train', action='store_true')
     parser.add_argument('--do_predict', action='store_true')
     parser.add_argument('--hidden_size', default=512, type=int)
-    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--batch_size', default=128, type=int)
     parser.add_argument('--max_epoch', default=300, type=int)
     parser.add_argument('--lr', default=1e-3, type=float)
     parser.add_argument('--cuda', default=0, type=int)
@@ -44,7 +45,8 @@ def main():
         model = simpleNet(args.hidden_size)
         model.to(device)
         opt = torch.optim.Adam(model.parameters(), lr=args.lr)
-        criteria = torch.nn.CrossEntropyLoss()
+        # criteria = torch.nn.CrossEntropyLoss()
+        criteria = torch.nn.BCEWithLogitsLoss()
         max_epoch = args.max_epoch
         batch_size = args.batch_size
         trainer = Trainer(device, trainData, validData, model, criteria, opt, batch_size, args.arch)
@@ -79,7 +81,7 @@ def main():
         prediction = []
         for i, (x, y) in trange:
             o_labels = model(x.to(device))
-            o_labels = torch.argmax(o_labels, axis=1)
+            o_labels = F.sigmoid(o_labels) > 0.5
             prediction.append(o_labels.to('cpu'))
 
         prediction = torch.cat(prediction).detach().numpy().astype(int)

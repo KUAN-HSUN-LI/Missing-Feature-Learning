@@ -15,10 +15,10 @@ class Trainer:
         self.trainData = trainData
         self.validData = validData
         self.model = model
-        self.criteria = torch.nn.CrossEntropyLoss()
+        self.criteria = torch.nn.BCEWithLogitsLoss()
         self.missing_criteria = torch.nn.MSELoss()
         self.opt = torch.optim.Adam(self.model.parameters(), lr=lr)
-        self.scheduler = StepLR(self.opt, step_size=100, gamma=0.1)
+        self.scheduler = StepLR(self.opt, step_size=100, gamma=0.5)
         self.batch_size = batch_size
         self.arch = arch
         self.history = {'train': [], 'valid': []}
@@ -73,13 +73,13 @@ class Trainer:
         labels = y.to(self.device)
         o_missing, o_labels = self.model(features)
         f_loss = self.missing_criteria(o_missing, missing)
-        l_loss = self.criteria(o_labels, labels.argmax(dim=1))
+        l_loss = self.criteria(o_labels, labels)
         return o_labels, f_loss, l_loss
 
     def save(self, epoch):
         if not os.path.exists(self.arch):
             os.makedirs(self.arch)
-        if epoch % 10 == 0:
+        if epoch % 50 == 0:
             torch.save(self.model.state_dict(), self.arch + '/model.pkl.' + str(epoch))
             with open(self.arch + '/history.json', 'w') as f:
                 json.dump(self.history, f, indent=4)

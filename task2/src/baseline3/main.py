@@ -21,7 +21,7 @@ def main():
     parser.add_argument('--do_train', action='store_true')
     parser.add_argument('--do_predict', action='store_true')
     parser.add_argument('--hidden_size', default=512, type=int)
-    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--batch_size', default=64, type=int)
     parser.add_argument('--max_epoch', default=300, type=int)
     parser.add_argument('--lr', default=1e-3, type=float)
     parser.add_argument('--cuda', default=1, type=int)
@@ -34,13 +34,13 @@ def main():
         dataset.drop("Id", axis=1, inplace=True)
 
         # drop outlier
-        outlier_idx = []
-        features = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14']
-        for f in features:
-            outlier_idx += get_outlier(dataset[f])
-        outlier_idx = list(set(outlier_idx))
-        print(len(outlier_idx))
-        dataset.drop(outlier_idx)
+        # outlier_idx = []
+        # features = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14']
+        # for f in features:
+        #     outlier_idx += get_outlier(dataset[f])
+        # outlier_idx = list(set(outlier_idx))
+        # print(len(outlier_idx))
+        # dataset.drop(outlier_idx)
 
         train_set, valid_set = train_test_split(dataset, test_size=0.1, random_state=58)
         train = preprocess_samples(train_set, missing=["F2", "F7", "F12"])

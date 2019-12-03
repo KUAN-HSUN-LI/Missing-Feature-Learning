@@ -32,5 +32,6 @@ def preprocess_sample(data, missing):
     if 'Class' in data:
         processed['Missing'] = [data[m] for m in missing]
         processed['Label'] = [1, 0] if data['Class'] == 0 else [0, 1]
+        # processed['Label'] = [0.9, 0.1] if data['Class'] == 0 else [0.1, 0.9]
 
     return processed

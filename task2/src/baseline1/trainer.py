@@ -17,7 +17,7 @@ class Trainer:
         self.model = model
         self.criteria = criteria
         self.opt = opt
-        self.scheduler = StepLR(self.opt, step_size=150, gamma=0.1)
+        self.scheduler = StepLR(self.opt, step_size=100, gamma=0.5)
         self.batch_size = batch_size
         self.arch = arch
         self.history = {'train': [], 'valid': []}
@@ -66,7 +66,7 @@ class Trainer:
         features = x.to(self.device)
         labels = y.to(self.device)
         o_labels = self.model(features)
-        l_loss = self.criteria(o_labels, labels.argmax(dim=1))
+        l_loss = self.criteria(o_labels, labels)
         return o_labels, l_loss
 
     def save(self, epoch):

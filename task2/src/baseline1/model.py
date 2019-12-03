@@ -7,10 +7,10 @@ class simpleNet(nn.Module):
         super(simpleNet, self).__init__()
 
         self.in1 = nn.Linear(11, hidden_size)
-        self.out = nn.Linear(hidden_size, 2)
+        self.out = nn.Linear(hidden_size, 1)
 
     def forward(self, x):
         x = torch.relu(self.in1(x))
         x = self.out(x)
-        x = torch.sigmoid(x)
+        # x = torch.sigmoid(x)
         return x

@@ -30,6 +30,7 @@ def preprocess_sample(data, missing):
     processed = dict()
     processed['Features'] = [data[feature] for feature in features]
     if 'Class' in data:
-        processed['Label'] = [1, 0] if data['Class'] == 0 else [0, 1]
+        # processed['Label'] = [1, 0] if data['Class'] == 0 else [0, 1]
+        processed['Label'] = [data['Class']]
 
     return processed

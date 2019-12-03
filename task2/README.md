@@ -25,38 +25,48 @@ python main.py --arch baseline1 --do_predict --ckpt 300
 
 
 ### baseline1
-- model 1 (11/24)
+- model 1 (11/28)
     - | simpleNet | Train   | Valid   | Public  |
       | --------- | ------- | ------- | ------- |
-      |           | 0.87535 | 0.78365 |   N/A   |
+      |           | 0.84980 | 0.78462 | 0.78536 |
     - parameters
-      - epoch: 200
-      - batch_size: 32
+      - epoch: 170
+      - batch_size: 128
       - loss: CELoss
-      - opt: Adam -lr=1e-3, step 0.1 per 100
+      - opt: Adam -lr=1e-3, step 0.1 per 150
+      
+- model 1 (12/2)
+    - | simpleNet | Train   | Valid   | Public  |
+      | --------- | ------- | ------- | ------- |
+      |           | 0.86145 | 0.79423 | 0.79793 |
+    - parameters
+      - epoch: 300
+      - batch_size: 128
+      - loss: BCEWithLogitsLoss
+      - opt: Adam -lr=1e-3, step 0.5 per 100
 
 
 ### baseline2
-- model 1 (11/24)
+- model 1 (11/28)
     - | simpleNet | Train   | Valid   | Public  |
       | --------- | ------- | ------- | ------- |
-      |           | 0.87535 | 0.78365 |   N/A   |
+      |           | 0.80778 | 0.78269 | 0.77907 |
     - parameters
-      - epoch: 200
-      - batch_size: 32
+      - epoch: stage1 200, stage2 200
+      - batch_size: 128
       - loss: CELoss
-      - opt: Adam -lr=1e-3, step 0.1 per 100
+      - opt: Adam -lr=1e-3, step 0.5 per 50
 
       
 ### baseline3
-- model 1 (11/27)
+- model 1 (11/28)
     - | simpleNet | Train   | Valid   | Public  |
       | --------- | ------- | ------- | ------- |
-      |           | 0.82788 | 0.79904 |   N/A   |
+      |           | 0.83611 | 0.79231 | 0.78311 |
     
     - parameters
-      - epoch: 300
-      - batch_size: 32
+      - epoch: 200
+      - batch_size: 64
       - loss: CELoss, MSELoss
       - opt: Adam -lr=1e-3, step 0.5 per 100
           
@@ -72,3 +82,19 @@ python main.py --arch baseline1 --do_predict --ckpt 300
       - batch_size: 128
       - loss: CELoss, MSELoss
       - opt: Adam -lr=1e-3, step 0.1 per 100
+
+
+### GAN
+- model 1 with noise (12/3)
+    - | simpleNet | Train   | Valid   | Public  |
+      | --------- | ------- | ------- | ------- |
+      |           | 0.83634 | 0.81145 | 0.80466 |
+    
+    - parameters
+      - epoch: 800
+      - batch_size: 32
+      - loss: BCEWithLogitsLoss
+      - opt: Adam 
+      - lr: 
+        - model: 1e-3, step 0.5 per 150
+        - generator/discriminator: 1e-4, step 0.5 per 300

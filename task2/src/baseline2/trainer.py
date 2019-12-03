@@ -20,7 +20,7 @@ class Trainer:
         self.opt1 = torch.optim.Adam(self.model.parameters(), lr=lr)
         self.scheduler1 = StepLR(self.opt1, step_size=50, gamma=0.5)
         self.opt2 = torch.optim.Adam(self.model.parameters(), lr=lr)
-        self.scheduler2 = StepLR(self.opt2, step_size=100, gamma=0.1)
+        self.scheduler2 = StepLR(self.opt2, step_size=100, gamma=0.2)
         self.batch_size = batch_size
         self.arch = arch
         self.history = {'train': [], 'valid': []}
@@ -91,7 +91,7 @@ class Trainer:
     def save(self, epoch):
         if not os.path.exists(self.arch):
             os.makedirs(self.arch)
-        if epoch % 10 == 0:
+        if epoch % 50 == 0:
             torch.save(self.model.state_dict(), self.arch + '/model.pkl.' + str(epoch))
             with open(self.arch + '/history.json', 'w') as f:
                 json.dump(self.history, f, indent=4)

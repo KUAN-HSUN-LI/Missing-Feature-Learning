@@ -16,7 +16,7 @@ class simpleNet(nn.Module):
 
     def forward(self, x):
         x = F.relu(self.embedding(x))
-        x = self.dropout(x)
+        # x = self.dropout(x)
 
         missing = self.out1(x)
         y = torch.sigmoid(self.out2(x))

@@ -1,15 +1,16 @@
 import argparse
 import pandas as pd
 import torch
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 from sklearn.model_selection import train_test_split
 
 from preprocessor import preprocess_samples
 from dataset import FeatureDataset
-from model import simpleNet
 from trainer import Trainer
 from utils import SubmitGenerator, get_outlier
+from models import Generator, Discriminator, SimpleNet
 from ipdb import set_trace as pdb
 
 
@@ -21,8 +22,8 @@ def main():
     parser.add_argument('--do_train', action='store_true')
     parser.add_argument('--do_predict', action='store_true')
     parser.add_argument('--hidden_size', default=512, type=int)
-    parser.add_argument('--batch_size', default=128, type=int)
-    parser.add_argument('--max_epoch', default=200, type=int)
+    parser.add_argument('--batch_size', default=32, type=int)
+    parser.add_argument('--max_epoch', default=800, type=int)
     parser.add_argument('--lr', default=1e-3, type=float)
     parser.add_argument('--cuda', default=1, type=int)
     parser.add_argument('--ckpt', default=-1, type=int, help='load pre-trained model epoch')
@@ -33,38 +34,21 @@ def main():
         dataset = pd.read_csv(args.data_dir + "train.csv")
         dataset.drop("Id", axis=1, inplace=True)
 
-        # drop outlier
-        # outlier_idx = []
-        # features = ['F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12', 'F13', 'F14']
-        # for f in features:
-        #     outlier_idx += get_outlier(dataset[f])
-        # outlier_idx = list(set(outlier_idx))
-        # print(len(outlier_idx))
-        # dataset.drop(outlier_idx)
-
-        train_set, valid_set = train_test_split(dataset, test_size=0.1, random_state=58)
+        train_set, valid_set = train_test_split(dataset, test_size=0.2, random_state=42)
         train = preprocess_samples(train_set, missing=["F2", "F7", "F12"])
         valid = preprocess_samples(valid_set, missing=["F2", "F7", "F12"])
         trainData = FeatureDataset(train)
         validData = FeatureDataset(valid)
 
         device = torch.device('cuda:%d' % args.cuda if torch.cuda.is_available() else 'cpu')
-        model = simpleNet(args.hidden_size)
-        model.to(device)
-        trainer = Trainer(device, trainData, validData, model, args.lr, args.batch_size, args.arch)
+        trainer = Trainer(device, trainData, validData, args.hidden_size, args.lr, args.batch_size, args.arch)
 
-        # stage 1 training
         for epoch in range(1, args.max_epoch + 1):
-            print('Stage1 Epoch: {}'.format(epoch))
-            trainer.run_epoch(epoch, True, stage1=True)
-            trainer.run_epoch(epoch, False, stage1=True)
-
-        # stage 2 training
-        for epoch in range(1, args.max_epoch + 1):
-            print('Stage2 Epoch: {}'.format(epoch))
-            trainer.run_epoch(epoch, True, stage1=False)
-            trainer.run_epoch(epoch, False, stage1=False)
-            trainer.save(epoch)
+            print('Epoch: {}'.format(epoch))
+            trainer.run_epoch(epoch, True)
+            trainer.run_epoch(epoch, False)
+            if epoch % 50 == 0:
+                trainer.save(epoch)
 
     if args.do_predict:
 
@@ -73,11 +57,19 @@ def main():
         test = preprocess_samples(dataset, missing=["F2", "F7", "F12"])
         testData = FeatureDataset(test)
 
+        path = '%s/model.pkl.%d' % (args.arch, args.ckpt)
+        checkpoint = torch.load(path)
         device = torch.device('cuda:%d' % args.cuda if torch.cuda.is_available() else 'cpu')
-        model = simpleNet(args.hidden_size)
-        model.load_state_dict(torch.load('%s/model.pkl.%d' % (args.arch, args.ckpt)))
-        model.train(False)
+
+        model = SimpleNet(args.hidden_size)
+        model.load_state_dict(checkpoint['model'])
         model.to(device)
+        model.train(False)
+        generator = Generator(args.hidden_size)
+        generator.load_state_dict(checkpoint['generator'])
+        generator.to(device)
+        generator.train(False)
+
         dataloader = DataLoader(dataset=testData,
                                 batch_size=args.batch_size,
                                 shuffle=False,
@@ -85,9 +77,12 @@ def main():
                                 num_workers=4)
         trange = tqdm(enumerate(dataloader), total=len(dataloader), desc='Predict')
         prediction = []
-        for i, (x, missing, y) in trange:
-            o_missing, o_labels = model(x.to(device))
-            o_labels = torch.argmax(o_labels, axis=1)
+        for i, (features, missing, y) in trange:
+
+            gen_missing = generator(features.to(device))
+            all_features = torch.cat((features.to(device), gen_missing.to(device)), dim=1)
+            o_labels = model(all_features)
+            o_labels = F.sigmoid(o_labels) > 0.5
             prediction.append(o_labels.to('cpu'))
 
         prediction = torch.cat(prediction).detach().numpy().astype(int)
