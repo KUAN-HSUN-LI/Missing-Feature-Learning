@@ -2,28 +2,28 @@
 
 - 11/23
   - counter, plot_box, get_outlier
-- 11/24
+- 12/10
 
-  - implementing simpleNet
-  - | simpleNet | Train   | Valid   | Public  |
+  - baseline1
+    | simpleNet | Train | Valid | Public |
     | --------- | ------- | ------- | ------- |
-    |           | 0.52892 | 0.51984 | 0.54092 |
+    | | 0.91213 | 0.80843 | 0.77573 |
 
-  - parameters
-    - epoch=47
+    parameters
+
+    - epoch=2694
     - batch_size=256
-    - loss:f1_loss
-    - opt:Adam -lr=2e-4
-    - baseline model 1(training without F1 data)
-
-- 11/25
-  - using CE for simpleNet
-  - | simpleNet | Train | Valid | Public |
-    | --------- | ----- | ----- | ------ |
-    |           | 0.694 | 0.673 | 0.649  |
-  - parameters
-    - epoch=397
-    - batch_size=1024
-    - loss:CrossEntropy
+    - loss:CE
     - opt:Adam -lr=1e-4
-    - baseline model 1(training without F1 data)
+
+  - simpleGAN
+    | simpleNet | Train | Valid | Public |
+    | --------- | ------- | ------- | ------- |
+    | | 0.92395 | 0.81130 | 0.73720 |
+
+    parameters
+
+    - epoch=3135
+    - batch_size=256
+    - loss: cls - CE
+    - opt:Adam -lr=1e-4
