@@ -5,9 +5,10 @@
 - 12/10
 
   - baseline1
-    | simpleNet | Train | Valid | Public |
+
+    | simpleNet | Train   | Valid   | Public  |
     | --------- | ------- | ------- | ------- |
-    | | 0.91213 | 0.80843 | 0.77573 |
+    |           | 0.91213 | 0.80843 | 0.77573 |
 
     parameters
 
@@ -17,9 +18,10 @@
     - opt:Adam -lr=1e-4
 
   - simpleGAN
-    | simpleNet | Train | Valid | Public |
+
+    | simpleNet | Train   | Valid   | Public  |
     | --------- | ------- | ------- | ------- |
-    | | 0.92395 | 0.81130 | 0.73720 |
+    |           | 0.92395 | 0.81130 | 0.73720 |
 
     parameters
 
