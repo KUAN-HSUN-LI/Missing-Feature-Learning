@@ -1,6 +1,6 @@
 import os
 import json
-from tqdm.notebook import tqdm
+from tqdm import tqdm
 from tqdm import trange
 import torch
 from metrics import accuracy
@@ -120,9 +120,6 @@ class Trainer():
                 'acc': acc.get_score(), 'g_loss': g_loss / len(trange), 'd_loss': d_loss / len(trange), 'loss': loss / len(trange)})
             self.save_hist()
 
-            # self.scheduler.step()
-            # self.scheduler_G.step()
-            # self.scheduler_D.step()
         else:
             self.history['valid'].append({
                 'acc': acc.get_score(), 'g_loss': g_loss / len(trange), 'd_loss': d_loss / len(trange), 'loss': loss / len(trange)})
