@@ -6,7 +6,7 @@
 
   - baseline1
 
-    | simpleNet | Train   | Valid   | Public  |
+    | baseline1 | Train   | Valid   | Public  |
     | --------- | ------- | ------- | ------- |
     |           | 0.91213 | 0.80843 | 0.77573 |
 
@@ -16,10 +16,11 @@
     - batch_size=256
     - loss:CE
     - opt:Adam -lr=1e-4
+    - data seed : 35
 
   - simpleGAN
 
-    | simpleNet | Train   | Valid   | Public  |
+    | simpleGAN | Train   | Valid   | Public  |
     | --------- | ------- | ------- | ------- |
     |           | 0.92395 | 0.81130 | 0.73720 |
 
@@ -29,3 +30,19 @@
     - batch_size=256
     - loss: cls - CE
     - opt:Adam -lr=1e-4
+
+* 12/12
+
+  - baseline1
+
+    | baseline1 | Train   | Valid   | Public  |
+    | --------- | ------- | ------- | ------- |
+    |           | 0.91405 | 0.77682 | 0.77573 |
+
+    parameters
+
+    - epoch=2942
+    - batch_size=256
+    - loss:CE
+    - opt:Adam -lr=1e-4
+    - data seed : 73
