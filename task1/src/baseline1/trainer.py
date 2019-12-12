@@ -18,6 +18,8 @@ class Trainer():
         self.opt = opt
         self.batch_size = batch_size
         self.model_dir = model_dir
+        if not os.path.exists(self.model_dir):
+            os.makedirs(self.model_dir)
         self.best_val = 0.0
 
     def run_epoch(self, epoch, training):
@@ -72,8 +74,6 @@ class Trainer():
         return o_labels, l_loss
 
     def save_best(self, epoch):
-        if not os.path.exists(self.model_dir):
-            os.makedirs(self.model_dir)
         torch.save(self.model.state_dict(), self.model_dir + '/model.pkl.'+str(epoch))
 
     def save_hist(self):

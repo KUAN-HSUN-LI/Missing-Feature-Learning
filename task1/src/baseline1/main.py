@@ -35,7 +35,7 @@ def main():
 
         dataset = pd.read_csv("../../data/train.csv")
         dataset.drop("Id", axis=1, inplace=True)
-        train_set, valid_set = train_test_split(dataset, test_size=0.1, random_state=35)
+        train_set, valid_set = train_test_split(dataset, test_size=0.1, random_state=73)
         feature_for_training = ["F2", "F3", "F4", "F5", "F6", "F7", "F8", "F9"]
 
         train = preprocess_samples(train_set, feature_for_training)
@@ -88,7 +88,7 @@ def main():
         SubmitGenerator(prediction, "../../data/sampleSubmission.csv")
 
     if args.do_plot:
-        plot_history("model/history.json")
+        plot_history("{file}/history.json".format(file=args.arch)
 
 
 if __name__ == '__main__':
